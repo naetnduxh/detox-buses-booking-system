@@ -13,6 +13,7 @@ if (empty($ref) && $booking_id <= 0) {
     exit;
 }
 
+// Fetch booking with route, bus, and passenger details
 $sql = "SELECT bk.*, r.origin, r.destination, r.travel_date, r.departure_time, r.fare,
                b.bus_name, b.plate_number, b.bus_type,
                u.full_name, u.email, u.phone
@@ -40,13 +41,14 @@ if (!$ticket) {
     exit;
 }
 
-
+// Ensure security: only ticket owner or admin can view
 if (!is_admin() && $ticket['user_id'] != $user['id']) {
     set_flash('error', 'You are not authorized to view this ticket.');
     header('Location: /detox_buses/passenger/my_bookings.php');
     exit;
 }
 
+// Check time remaining
 $cashout_check = check_cashout_eligibility($ticket['travel_date'], $ticket['departure_time']);
 
 $page_title = "E-Ticket #" . $ticket['booking_ref'];

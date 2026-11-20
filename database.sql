@@ -1,8 +1,11 @@
+-- Detox Buses Online Booking System
+-- Database Schema (5 Relational Tables)
+-- Course Alignment: BIT 313
 
 CREATE DATABASE IF NOT EXISTS `detox_buses_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `detox_buses_db`;
 
-
+-- 1. users Table
 CREATE TABLE IF NOT EXISTS `users` (
   `user_id` INT AUTO_INCREMENT PRIMARY KEY,
   `full_name` VARCHAR(100) NOT NULL,
@@ -13,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+-- 2. buses Table
 CREATE TABLE IF NOT EXISTS `buses` (
   `bus_id` INT AUTO_INCREMENT PRIMARY KEY,
   `bus_name` VARCHAR(100) NOT NULL,
@@ -23,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `buses` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+-- 3. routes Table
 CREATE TABLE IF NOT EXISTS `routes` (
   `route_id` INT AUTO_INCREMENT PRIMARY KEY,
   `bus_id` INT NOT NULL,
@@ -38,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `routes` (
   CONSTRAINT `fk_routes_buses` FOREIGN KEY (`bus_id`) REFERENCES `buses` (`bus_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+-- 4. bookings Table
 CREATE TABLE IF NOT EXISTS `bookings` (
   `booking_id` INT AUTO_INCREMENT PRIMARY KEY,
   `booking_ref` VARCHAR(50) NOT NULL UNIQUE,
@@ -54,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `bookings` (
   CONSTRAINT `fk_bookings_routes` FOREIGN KEY (`route_id`) REFERENCES `routes` (`route_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+-- 5. refunds Table
 CREATE TABLE IF NOT EXISTS `refunds` (
   `refund_id` INT AUTO_INCREMENT PRIMARY KEY,
   `booking_id` INT NOT NULL,

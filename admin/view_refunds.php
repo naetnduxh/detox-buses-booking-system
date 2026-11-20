@@ -4,7 +4,7 @@ require_admin();
 
 $page_title = "Cash-Out & Refund Audit Trail";
 
-
+// Fetch all refunds with booking, user, and route details
 $sql = "SELECT rf.*, bk.booking_ref, bk.seat_number, bk.boarding_point,
                u.full_name, u.email,
                r.origin, r.destination, r.travel_date, r.departure_time,
@@ -18,7 +18,7 @@ $sql = "SELECT rf.*, bk.booking_ref, bk.seat_number, bk.boarding_point,
 
 $refunds = $pdo->query($sql)->fetchAll();
 
-
+// Financial audit totals
 $total_refunds_count = count($refunds);
 $total_original = 0;
 $total_fees = 0;

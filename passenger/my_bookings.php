@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/db.php';
 require_login();
 $user = current_user();
 
-
+// Fetch passenger's bookings
 $stmt = $pdo->prepare("SELECT bk.*, r.origin, r.destination, r.travel_date, r.departure_time, r.fare,
                               b.bus_name, b.plate_number, b.bus_type,
                               rf.refund_amount, rf.cancellation_fee, rf.reversal_ref, rf.refunded_at

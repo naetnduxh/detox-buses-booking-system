@@ -9,6 +9,7 @@ if ($route_id <= 0) {
     exit;
 }
 
+// Fetch route and bus details
 $stmt = $pdo->prepare("SELECT r.*, b.bus_name, b.plate_number, b.bus_type, b.total_seats
                        FROM routes r
                        JOIN buses b ON r.bus_id = b.bus_id
@@ -22,10 +23,12 @@ if (!$route) {
     exit;
 }
 
+// Fetch occupied seats for this route
 $stmt_seats = $pdo->prepare("SELECT seat_number FROM bookings WHERE route_id = ? AND status = 'Confirmed'");
 $stmt_seats->execute([$route_id]);
 $occupied_seats = $stmt_seats->fetchAll(PDO::FETCH_COLUMN);
 
+// Parse roadside boarding points
 $boarding_points_array = array_map('trim', explode(',', $route['boarding_points']));
 
 $page_title = "Select Seats - " . $route['bus_name'] . " (" . $route['destination'] . ")";

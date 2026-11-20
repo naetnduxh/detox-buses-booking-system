@@ -6,11 +6,11 @@ $page_title = "Manage Schedules & Routes";
 $error = '';
 $edit_route = null;
 
-
+// Handle Delete Route
 if (isset($_GET['delete'])) {
     $del_id = (int)$_GET['delete'];
     
-    
+    // Check if there are confirmed bookings
     $chk = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE route_id = ? AND status = 'Confirmed'");
     $chk->execute([$del_id]);
     $confirmed_count = $chk->fetchColumn();
@@ -29,7 +29,7 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-
+// Handle Add / Edit Route POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $route_id = isset($_POST['route_id']) ? (int)$_POST['route_id'] : 0;
     $bus_id = (int)($_POST['bus_id'] ?? 0);
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
+// Check if Editing
 if (isset($_GET['edit'])) {
     $edit_id = (int)$_GET['edit'];
     $stmt = $pdo->prepare("SELECT * FROM routes WHERE route_id = ?");
@@ -77,10 +77,10 @@ if (isset($_GET['edit'])) {
     $edit_route = $stmt->fetch();
 }
 
-
+// Fetch available buses for the dropdown
 $buses = $pdo->query("SELECT bus_id, bus_name, plate_number, bus_type FROM buses ORDER BY bus_name ASC")->fetchAll();
 
-
+// Fetch all routes with bus details and booked counts
 $routes = $pdo->query("SELECT r.*, b.bus_name, b.plate_number, b.total_seats,
                        (SELECT COUNT(*) FROM bookings bk WHERE bk.route_id = r.route_id AND bk.status = 'Confirmed') AS booked_seats
                        FROM routes r

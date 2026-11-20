@@ -4,7 +4,7 @@ require_admin();
 
 $route_id = isset($_GET['route_id']) ? (int)$_GET['route_id'] : 0;
 
-
+// Fetch all available routes for dropdown
 $all_routes = $pdo->query("SELECT r.route_id, r.origin, r.destination, r.travel_date, r.departure_time, b.bus_name, b.plate_number
                           FROM routes r
                           JOIN buses b ON r.bus_id = b.bus_id
@@ -14,7 +14,7 @@ if ($route_id <= 0 && !empty($all_routes)) {
     $route_id = $all_routes[0]['route_id'];
 }
 
-
+// Fetch chosen route details
 $stmt_r = $pdo->prepare("SELECT r.*, b.bus_name, b.plate_number, b.total_seats, b.bus_type
                          FROM routes r
                          JOIN buses b ON r.bus_id = b.bus_id
@@ -22,7 +22,7 @@ $stmt_r = $pdo->prepare("SELECT r.*, b.bus_name, b.plate_number, b.total_seats, 
 $stmt_r->execute([$route_id]);
 $current_route = $stmt_r->fetch();
 
-
+// Fetch confirmed passenger bookings ordered by seat_number
 $passengers = [];
 if ($current_route) {
     $stmt_p = $pdo->prepare("SELECT bk.*, u.full_name, u.email, u.phone

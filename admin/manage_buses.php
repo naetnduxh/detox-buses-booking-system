@@ -6,11 +6,11 @@ $page_title = "Manage Fleet Buses";
 $error = '';
 $edit_bus = null;
 
-
+// Handle Delete Bus
 if (isset($_GET['delete'])) {
     $del_id = (int)$_GET['delete'];
     
-    
+    // Check if bus has active routes
     $chk = $pdo->prepare("SELECT COUNT(*) FROM routes WHERE bus_id = ?");
     $chk->execute([$del_id]);
     if ($chk->fetchColumn() > 0) {
@@ -27,7 +27,7 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-
+// Handle Add / Edit Bus POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bus_id = isset($_POST['bus_id']) ? (int)$_POST['bus_id'] : 0;
     $bus_name = trim($_POST['bus_name'] ?? '');
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Bus name and registration plate number are required.";
     } else {
         if ($bus_id > 0) {
-            
+            // Update
             $stmt = $pdo->prepare("UPDATE buses SET bus_name = ?, plate_number = ?, total_seats = ?, bus_type = ? WHERE bus_id = ?");
             if ($stmt->execute([$bus_name, $plate_number, $total_seats, $bus_type, $bus_id])) {
                 set_flash('success', 'Bus fleet details updated successfully.');
@@ -49,8 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = "Failed to update bus details.";
             }
         } else {
-            
-    
+            // Create
+            // Check plate duplicate
             $chk = $pdo->prepare("SELECT bus_id FROM buses WHERE plate_number = ?");
             $chk->execute([$plate_number]);
             if ($chk->fetch()) {
@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Check if Editing
 if (isset($_GET['edit'])) {
     $edit_id = (int)$_GET['edit'];
     $stmt = $pdo->prepare("SELECT * FROM buses WHERE bus_id = ?");
@@ -76,7 +77,7 @@ if (isset($_GET['edit'])) {
     $edit_bus = $stmt->fetch();
 }
 
-
+// Fetch all buses with active trip counts
 $buses = $pdo->query("SELECT b.*, 
                       (SELECT COUNT(*) FROM routes r WHERE r.bus_id = b.bus_id) AS total_trips
                       FROM buses b ORDER BY b.bus_id DESC")->fetchAll();

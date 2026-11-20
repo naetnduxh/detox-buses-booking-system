@@ -18,7 +18,7 @@ if ($booking_id <= 0) {
     exit;
 }
 
-
+// Fetch booking and route details to check ownership and departure time
 $stmt = $pdo->prepare("SELECT bk.*, r.travel_date, r.departure_time, r.origin, r.destination 
                        FROM bookings bk
                        JOIN routes r ON bk.route_id = r.route_id
@@ -38,7 +38,7 @@ if ($booking['status'] !== 'Confirmed') {
     exit;
 }
 
-
+// Enforce 1-Hour Pre-Departure Rule using Africa/Nairobi Server Time
 $eligibility = check_cashout_eligibility($booking['travel_date'], $booking['departure_time']);
 
 if (!$eligibility['is_eligible']) {
@@ -47,12 +47,12 @@ if (!$eligibility['is_eligible']) {
     exit;
 }
 
-
+// Automated 10% Cancellation Fee & 90% Refund Math
 $original_fare = (float)$booking['amount_paid'];
 $cancellation_fee = round($original_fare * 0.10, 2);
 $refund_amount = round($original_fare * 0.90, 2);
 
-
+// Generate unique reversal reference: REV-YYYY-XXXX
 do {
     $reversal_ref = 'REV-' . date('Y') . '-' . mt_rand(1000, 9999);
     $stmt_check = $pdo->prepare("SELECT refund_id FROM refunds WHERE reversal_ref = ?");
@@ -62,11 +62,11 @@ do {
 try {
     $pdo->beginTransaction();
 
-
+    // 1. Update booking status to 'Refunded' (frees up seat immediately)
     $stmt_update = $pdo->prepare("UPDATE bookings SET status = 'Refunded' WHERE booking_id = ?");
     $stmt_update->execute([$booking_id]);
 
-   
+    // 2. Insert audit log into refunds table
     $stmt_refund = $pdo->prepare("INSERT INTO refunds (booking_id, original_amount, cancellation_fee, refund_amount, mpesa_phone, reversal_ref) 
                                  VALUES (?, ?, ?, ?, ?, ?)");
     $stmt_refund->execute([

@@ -1,4 +1,7 @@
-
+/**
+ * Detox Buses Online Booking System - Interactive Client Scripts
+ * Course Alignment: BIT 313
+ */
 
 document.addEventListener('DOMContentLoaded', function () {
     initSeatSelection();
@@ -7,7 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
     initCashoutModal();
 });
 
-
+/**
+ * 1. Visual 2x2 Bus Seat Map Interactive Selector
+ */
 function initSeatSelection() {
     const seatButtons = document.querySelectorAll('.seat.available');
     const selectedSeatInput = document.getElementById('selected_seat');
@@ -18,15 +23,15 @@ function initSeatSelection() {
         seat.addEventListener('click', function () {
             const seatNum = this.getAttribute('data-seat');
 
-            
+            // Deselect previous selection
             document.querySelectorAll('.seat.selected').forEach(s => {
                 s.classList.remove('selected');
             });
 
-            
+            // Mark this seat as selected
             this.classList.add('selected');
 
-           
+            // Update form inputs and displays
             if (selectedSeatInput) {
                 selectedSeatInput.value = seatNum;
             }
@@ -40,7 +45,7 @@ function initSeatSelection() {
         });
     });
 
-    
+    // Alert for occupied seats
     document.querySelectorAll('.seat.occupied').forEach(seat => {
         seat.addEventListener('click', function () {
             const seatNum = this.getAttribute('data-seat');
@@ -49,7 +54,10 @@ function initSeatSelection() {
     });
 }
 
-
+/**
+ * 2. Smart Group Seat Finder Algorithm
+ * Searches for side-by-side adjacent open seats across the 2x2 layout
+ */
 function initGroupSeatFinder() {
     const findGroupBtn = document.getElementById('btn_find_group');
     if (!findGroupBtn) return;
@@ -65,7 +73,9 @@ function initGroupSeatFinder() {
             }
         });
 
-       
+        // 8 Rows in 32-seater bus (4 seats per row)
+        // Left side: [1,2], [5,6], [9,10]...
+        // Right side: [3,4], [7,8], [11,12]...
         let foundSeats = null;
 
         if (groupSize === 2) {
@@ -84,7 +94,7 @@ function initGroupSeatFinder() {
                 }
             }
         } else if (groupSize === 3 || groupSize === 4) {
-           
+            // Check for 3 or 4 contiguous or in same row
             for (let row = 1; row <= 8; row++) {
                 const s1 = (row - 1) * 4 + 1;
                 const s2 = (row - 1) * 4 + 2;
@@ -101,15 +111,15 @@ function initGroupSeatFinder() {
         }
 
         if (foundSeats && foundSeats.length > 0) {
-           
+            // Clear current selections
             document.querySelectorAll('.seat.selected').forEach(s => s.classList.remove('selected'));
 
-           
+            // Highlight all found seats
             foundSeats.forEach((seatNum, idx) => {
                 const seatEl = document.querySelector(`.seat[data-seat='${seatNum}']`);
                 if (seatEl) {
                     seatEl.classList.add('selected');
-                    
+                    // Pick the first seat by default into form input
                     if (idx === 0) {
                         const selectedSeatInput = document.getElementById('selected_seat');
                         const selectedSeatDisplay = document.getElementById('display_selected_seat');
@@ -134,7 +144,9 @@ function initGroupSeatFinder() {
     });
 }
 
-
+/**
+ * 3. Simulated M-Pesa Code Generator Helper
+ */
 function initMpesaHelper() {
     const generateBtn = document.getElementById('btn_generate_mpesa');
     const mpesaInput = document.getElementById('mpesa_code');
@@ -152,7 +164,9 @@ function initMpesaHelper() {
     });
 }
 
-
+/**
+ * 4. 1-Hour Pre-Departure Cash-Out Modal & 10% Fee Breakdown
+ */
 function initCashoutModal() {
     const openBtns = document.querySelectorAll('.btn-open-cashout');
     const modal = document.getElementById('cashout_modal');

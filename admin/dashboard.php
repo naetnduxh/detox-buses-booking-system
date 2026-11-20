@@ -4,19 +4,19 @@ require_admin();
 
 $page_title = "Admin Dashboard";
 
-
+// Fetch Dashboard Metrics
 $total_buses = $pdo->query("SELECT COUNT(*) FROM buses")->fetchColumn();
 $total_routes = $pdo->query("SELECT COUNT(*) FROM routes WHERE status = 'Active'")->fetchColumn();
 $active_bookings = $pdo->query("SELECT COUNT(*) FROM bookings WHERE status = 'Confirmed'")->fetchColumn();
 $total_refunds_count = $pdo->query("SELECT COUNT(*) FROM refunds")->fetchColumn();
 
-
+// Financial metrics
 $gross_sales = $pdo->query("SELECT COALESCE(SUM(amount_paid), 0) FROM bookings WHERE status = 'Confirmed'")->fetchColumn();
 $refunds_paid = $pdo->query("SELECT COALESCE(SUM(refund_amount), 0) FROM refunds")->fetchColumn();
 $fees_earned = $pdo->query("SELECT COALESCE(SUM(cancellation_fee), 0) FROM refunds")->fetchColumn();
 $net_revenue = $gross_sales + $fees_earned;
 
-
+// Recent 5 Bookings
 $recent_bookings = $pdo->query("SELECT bk.*, u.full_name, u.phone, r.origin, r.destination, r.travel_date, r.departure_time, b.bus_name
                                 FROM bookings bk
                                 JOIN users u ON bk.user_id = u.user_id
@@ -24,7 +24,7 @@ $recent_bookings = $pdo->query("SELECT bk.*, u.full_name, u.phone, r.origin, r.d
                                 JOIN buses b ON r.bus_id = b.bus_id
                                 ORDER BY bk.created_at DESC LIMIT 5")->fetchAll();
 
-                                
+// Recent 5 Refunds
 $recent_refunds = $pdo->query("SELECT rf.*, bk.booking_ref, bk.seat_number, u.full_name, r.destination, r.travel_date
                                FROM refunds rf
                                JOIN bookings bk ON rf.booking_id = bk.booking_id

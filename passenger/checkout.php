@@ -14,7 +14,7 @@ if ($route_id <= 0 || $seat_number <= 0) {
     exit;
 }
 
-
+// Fetch route and bus
 $stmt = $pdo->prepare("SELECT r.*, b.bus_name, b.plate_number, b.bus_type
                        FROM routes r
                        JOIN buses b ON r.bus_id = b.bus_id
@@ -28,6 +28,7 @@ if (!$route) {
     exit;
 }
 
+// Double-booking check
 $check_seat = $pdo->prepare("SELECT booking_id FROM bookings WHERE route_id = ? AND seat_number = ? AND status = 'Confirmed' LIMIT 1");
 $check_seat->execute([$route_id, $seat_number]);
 if ($check_seat->fetch()) {
@@ -36,6 +37,7 @@ if ($check_seat->fetch()) {
     exit;
 }
 
+// Process Payment Submission
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'confirm_payment') {
     $mpesa_code = strtoupper(trim($_POST['mpesa_code'] ?? ''));
@@ -46,12 +48,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     } elseif (empty($mpesa_phone)) {
         $error = "Please provide an M-Pesa phone number.";
     } else {
-        
+        // Re-check seat one more time in atomic block
         $check_seat->execute([$route_id, $seat_number]);
         if ($check_seat->fetch()) {
             $error = "Seat #{$seat_number} was booked while processing. Please pick another seat.";
         } else {
-            
+            // Generate unique booking reference: DTX-YYYY-XXXX
             do {
                 $ref = 'DTX-' . date('Y') . '-' . mt_rand(1000, 9999);
                 $stmt_ref = $pdo->prepare("SELECT booking_id FROM bookings WHERE booking_ref = ?");

@@ -1,20 +1,26 @@
 <?php
-
+/**
+ * Detox Buses Online Booking System
+ * Database Configuration & Global Helpers
+ * Course Alignment: BIT 313
+ */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
+// Kenya Standard Timezone (EAT: UTC+3)
 date_default_timezone_set('Africa/Nairobi');
 
-
+// Database credentials
 define('DB_HOST', '127.0.0.1');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'detox_buses_db');
 
-
+/**
+ * Establish PDO connection with auto-detection for XAMPP ports (3307 / 3306)
+ */
 function get_db_connection() {
     static $pdo = null;
     if ($pdo !== null) {
@@ -26,7 +32,7 @@ function get_db_connection() {
 
     foreach ($ports as $port) {
         try {
-          
+            // First check if database exists; if not, connect to server root to create it
             $dsn = "mysql:host=" . DB_HOST . ";port=" . $port . ";charset=utf8mb4";
             $temp_pdo = new PDO($dsn, DB_USER, DB_PASS, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -34,10 +40,10 @@ function get_db_connection() {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
 
-            
+            // Ensure database exists
             $temp_pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
-           
+            // Now connect directly to the target database
             $db_dsn = "mysql:host=" . DB_HOST . ";port=" . $port . ";dbname=" . DB_NAME . ";charset=utf8mb4";
             $pdo = new PDO($db_dsn, DB_USER, DB_PASS, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -45,7 +51,7 @@ function get_db_connection() {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
 
-            
+            // Auto-migrate tables if not present
             check_and_migrate_tables($pdo);
 
             return $pdo;
@@ -61,7 +67,9 @@ function get_db_connection() {
         </div>");
 }
 
-
+/**
+ * Automatically creates the 5 required relational tables and seeds initial data if missing
+ */
 function check_and_migrate_tables($pdo) {
     $table_check = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
     if (!$table_check) {
@@ -73,7 +81,9 @@ function check_and_migrate_tables($pdo) {
     }
 }
 
-
+/**
+ * Authentication Helper Functions
+ */
 function is_logged_in() {
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 }
@@ -113,7 +123,9 @@ function require_admin() {
     }
 }
 
-
+/**
+ * Flash Message Helpers
+ */
 function set_flash($type, $message) {
     $_SESSION['flash'] = [
         'type' => $type, // 'success', 'error', 'info', 'warning'
@@ -130,7 +142,9 @@ function get_flash() {
     return null;
 }
 
-
+/**
+ * Display Flash Message HTML
+ */
 function display_flash() {
     $flash = get_flash();
     if ($flash) {
@@ -144,7 +158,9 @@ function display_flash() {
     }
 }
 
-
+/**
+ * Currency and Date Formatters
+ */
 function format_kes($amount) {
     return 'KES ' . number_format((float)$amount, 2);
 }
@@ -196,4 +212,5 @@ function check_cashout_eligibility($travel_date, $departure_time) {
     ];
 }
 
+// Global active database handle
 $pdo = get_db_connection();
